@@ -159,7 +159,7 @@ jobs:
               echo "No changes to commit for branch $TARGET_BRANCH."
             else
               git commit -m "Sync Tekton files from $SOURCE_BRANCH to $TARGET_BRANCH with updated versioning"
-              git push https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/owner/repo-name.git
+              git push https://x-access-token:${{ steps.app-token.outputs.token }}@${repo_url#https://}
               #git push origin "$TARGET_BRANCH"
               echo "Pushed changes to branch $TARGET_BRANCH in $repo_name."
               
