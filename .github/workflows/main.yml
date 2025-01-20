@@ -155,12 +155,9 @@ jobs:
               echo "No changes to commit for branch $TARGET_BRANCH."
             else
               git commit -m "Sync Tekton files from $SOURCE_BRANCH to $TARGET_BRANCH with updated versioning"
-              #git config --global url.https://${{ secrets.PAT }}@github.com/.insteadOf https://github.com/
-              #git config --global url."https://${GIT_TOKEN}@github.com".insteadOf "https://github.com/"
-              git config --global url."https://${GIT_TOKEN}@github.com/".insteadOf "https://github.com/"
-
               git push origin "$TARGET_BRANCH"
               echo "Pushed changes to branch $TARGET_BRANCH in $repo_name."
+              
             fi
 
             # Clean up
