@@ -15,6 +15,10 @@ on:
         description: 'Version to update in Tekton files (e.g., v2.16.0)'
         required: true
         default: 'vx.y.z'
+        
+permissions:
+  contents: write
+  actions: write
 
 jobs:
   copy-tekton-files:
