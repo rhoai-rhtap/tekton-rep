@@ -39,7 +39,7 @@ jobs:
         uses: getsentry/action-github-app-token@v2
         with:
           app_id: ${{ secrets.PCAM_APP_ID }}
-          private_key: ${{ secrets.APP_KEY }}
+          private_key: ${{ secrets.PCAM_KEY }}
 
       - name: Fetch and Install Dependencies
         run: |
