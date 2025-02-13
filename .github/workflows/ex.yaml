@@ -80,7 +80,7 @@ jobs:
             cd "$repo_name" || { echo "Failed to enter directory $repo_name"; exit 1; }
 
             # Configure Git to use the github token for authentication
-            git config --global url."https://${{ secrets.GH_TOKEN }}@github.com/".insteadOf "https://github.com/"
+           # git config --global url."https://${{ secrets.GH_TOKEN }}@github.com/".insteadOf "https://github.com/"
 
             # Check out the source branch
             if ! git checkout "$SOURCE_BRANCH"; then
