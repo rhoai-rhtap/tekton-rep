@@ -119,10 +119,14 @@ jobs:
             done
             
             # Check out the target branch
-            if ! git checkout "$TARGET_BRANCH"; then
-              echo "Error: Target branch $TARGET_BRANCH does not exist. Creating it."
-              git checkout -b "$TARGET_BRANCH"
+            if git rev-parse --verify "$TARGET_BRANCH" >/dev/null 2>&1; then
+                git checkout "$TARGET_BRANCH"
+                echo "Checked out branch $TARGET_BRANCH"
+            else
+                echo "Error: Target branch $TARGET_BRANCH does not exist. Exiting."
+                exit 1
             fi
+
 
             echo "Checked out branch $TARGET_BRANCH"
 
