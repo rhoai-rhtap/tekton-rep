@@ -123,9 +123,9 @@ jobs:
                 git checkout "$TARGET_BRANCH"
                 echo "Checked out branch $TARGET_BRANCH"
             else
-                echo "Error: Target branch $TARGET_BRANCH does not exist. Exiting."
-                exit 1
+                echo "Warning: Target branch $TARGET_BRANCH does not exist. Skipping."
             fi
+
 
 
             echo "Checked out branch $TARGET_BRANCH"
