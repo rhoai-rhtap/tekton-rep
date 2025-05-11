@@ -1,0 +1,33 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "branchPrefix": "renovate/",
+  "baseBranches": ["main"],
+  "ignoreTests": true,
+  "automergeType": "pr",
+  "automerge": true,
+  "prHourlyLimit": 0,
+  "enabledManagers": ["dockerfile", "custom.regex"],
+  "packageRules": [
+    {
+      "matchManagers": ["custom.regex"],
+      "matchUpdateTypes": ["digest", "minor"],
+      "matchBaseBranches": ["main"],
+      "matchFileNames": ["bundle/additional-images-patch.yaml"],
+      "automerge": true,
+      "groupName": "Additional Images SHA Updates",
+      "semanticCommits": "enabled"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^bundle/additional-images-patch\\.yaml$"],
+      "matchStrings": [
+        "value:\\s+\"(?<depName>registry\\.redhat\\.io/[^:@]+):(?<currentValue>[^@]+@sha256:[a-f0-9]{64})\""
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    }
+  ]
+}
