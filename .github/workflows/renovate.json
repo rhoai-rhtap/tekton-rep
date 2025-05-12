@@ -7,7 +7,7 @@
   "automergeType": "pr",
   "automerge": true,
   "prHourlyLimit": 0,
-  "enabledManagers": ["dockerfile", "custom.regex"],
+  "enabledManagers": ["dockerfile", "custom.regex", "tekton"],
   "packageRules": [
     {
       "matchManagers": ["custom.regex"],
@@ -23,7 +23,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^bundle/additional-images-patch\\.yaml$"],
+      "managerFilePatterns": ["^bundle/additional-images-patch\\.yaml$"],
       "matchStrings": [
         "value:\\s+\"(?<depName>registry\\.redhat\\.io/[^:@]+):(?<currentValue>[^@]+@sha256:[a-f0-9]{64})\""
       ],
