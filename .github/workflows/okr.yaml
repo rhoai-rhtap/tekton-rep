@@ -40,13 +40,6 @@ jobs:
       - name: Checkout OKC repository
         uses: actions/checkout@v4
 
-      - name: Generate github-app token
-        id: app-token
-        uses: getsentry/action-github-app-token@v2
-        with:
-          app_id: ${{ secrets.PCAM_APP_ID }}
-          private_key: ${{ secrets.PCAM_KEY }}
-
       - name: Prepare Tekton files
         run: |
           repo_folder="${{ inputs.okc_folder }}"
@@ -61,7 +54,6 @@ jobs:
           find extracted/.tekton/ -type f -name "*.yaml" | while read file; do
             sed -i -E '/name: output-image/{n; s|(value: .+:)[^[:space:]]+|\1'"${{ inputs.version }}"'|}' "$file"
           done
-          
       - name: Create branch and commit updates
         run: |
           branch_name="tekton-update-${{ inputs.version }}"
@@ -81,7 +73,7 @@ jobs:
           fi
           
           mkdir -p .tekton
-          rsync -avc --delete ../extracted/.tekton/ .tekton/
+          rsync -av --delete ../extracted/.tekton/ .tekton/
       
           echo "--- Git Status After Copy ---"
           git status
@@ -102,12 +94,10 @@ jobs:
 
 
       - name: Create Pull Request
-        if: steps.clone.outputs.commit == 'true'
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           REPO: ${{ inputs.repository }}
           BASE: ${{ inputs.release_branch }}
-          HEAD: tekton-update-${{ inputs.version }}
+          HEAD: ${{ github.repository_owner }}:tekton-update-${{ inputs.version }}
           VERSION: ${{ inputs.version }}
           OKC_FOLDER: ${{ inputs.okc_folder }}
         run: |
