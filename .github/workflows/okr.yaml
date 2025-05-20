@@ -33,16 +33,23 @@ jobs:
       pull-requests: write
       repository-projects: write
       
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout OKC repository
         uses: actions/checkout@v4
+        with:
+          path: okc-repo
 
+      - name: Generate github-app token
+        id: app-token
+        uses: getsentry/action-github-app-token@v2
+        with:
+          app_id: ${{ secrets.PCAM_APP_ID }}
+          private_key: ${{ secrets.PCAM_KEY }}
+      
       - name: Prepare Tekton files
         run: |
-          repo_folder="${{ inputs.okc_folder }}"
+          repo_folder="okc-repo/${{ inputs.okc_folder }}"
           echo "Using OKC folder: $repo_folder"
           if [ ! -d "$repo_folder/.tekton" ]; then
             echo "ERROR: $repo_folder/.tekton does not exist!"
@@ -54,50 +61,48 @@ jobs:
           find extracted/.tekton/ -type f -name "*.yaml" | while read file; do
             sed -i -E '/name: output-image/{n; s|(value: .+:)[^[:space:]]+|\1'"${{ inputs.version }}"'|}' "$file"
           done
-      - name: Create branch and commit updates
+
+      - name: Clone and push Tekton changes
         run: |
-          branch_name="tekton-update-${{ inputs.version }}"
-          mkdir repo-workspace
+          git clone https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ inputs.repository }} repo-workspace
           cd repo-workspace
-          
-          git init
-          git remote add origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/opendatahub-io/kc-rep
-          git fetch origin
-          
-          if git ls-remote --exit-code --heads origin "$branch_name" > /dev/null; then
-            echo "Branch $branch_name exists remotely. Checking it out."
-            git checkout -b "$branch_name" origin/"$branch_name"
-          else
-            echo "Branch $branch_name does not exist remotely. Creating new branch."
-            git checkout -b "$branch_name"
-          fi
-          
-          mkdir -p .tekton
-          rsync -av --delete ../extracted/.tekton/ .tekton/
-      
-          echo "--- Git Status After Copy ---"
-          git status
-          echo "--- Git Diff After Copy ---"
-          git diff
-      
-          if git diff --quiet; then
-            echo "No changes detected. Exiting."
-            exit 0
-          fi
       
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+          branch_name="tekton-update-${{ inputs.version }}"
+      
+          git fetch origin
+          if git ls-remote --exit-code --heads origin "$branch_name"; then
+            git checkout "$branch_name"
+          else
+            git checkout -b "$branch_name"
+          fi
+      
+          mkdir -p .tekton
+          rsync -avc --delete ../extracted/.tekton/ .tekton/
+      
+          if git diff --quiet; then
+            echo "No changes to commit."
+            echo "commit=false" >> $GITHUB_ENV
+            exit 0
+          fi
+      
           git add .tekton
           git commit -m "Update Tekton output-image tags to version ${{ inputs.version }}"
-          git push origin "$branch_name"
+          git push --set-upstream origin "$branch_name"
+          echo "commit=true" >> $GITHUB_ENV
+
 
 
 
       - name: Create Pull Request
+        if: env.commit == 'true'   # Only run if there were changes committed and pushed
         env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           REPO: ${{ inputs.repository }}
           BASE: ${{ inputs.release_branch }}
-          HEAD: ${{ github.repository_owner }}:tekton-update-${{ inputs.version }}
+          HEAD: tekton-update-${{ inputs.version }}
           VERSION: ${{ inputs.version }}
           OKC_FOLDER: ${{ inputs.okc_folder }}
         run: |
