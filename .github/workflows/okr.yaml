@@ -82,23 +82,23 @@ jobs:
           mkdir -p .tekton
           rsync -av --delete ../extracted/.tekton/ .tekton/
           
-          echo "Checking git status and diff:"
-          git status
-          git diff || true
+          # Add all changes including new files:
+          git add .tekton
           
-          if git diff --quiet; then
+          echo "Checking git status and diff after git add:"
+          git status
+          git diff --cached || true  # show staged diff
+          
+          # Now check if anything staged for commit:
+          if git diff --cached --quiet; then
             echo "No changes to commit."
             echo "commit=false" >> $GITHUB_ENV
             exit 0
           fi
           
-          git add .tekton
           git commit -m "Update Tekton output-image tags to version ${{ inputs.version }}"
           git push --set-upstream origin "$branch_name"
           echo "commit=true" >> $GITHUB_ENV
-
-
-
 
 
       - name: Create Pull Request
