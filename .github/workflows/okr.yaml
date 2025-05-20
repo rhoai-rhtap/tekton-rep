@@ -66,32 +66,37 @@ jobs:
         run: |
           git clone https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ inputs.repository }} repo-workspace
           cd repo-workspace
-      
+          
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-      
+          
           branch_name="tekton-update-${{ inputs.version }}"
-      
+          
           git fetch origin
-          if git ls-remote --exit-code --heads origin "$branch_name"; then
+          if git ls-remote --exit-code --heads origin "$branch_name" > /dev/null; then
             git checkout "$branch_name"
           else
             git checkout -b "$branch_name"
           fi
-      
+          
           mkdir -p .tekton
-          rsync -avc --delete ../extracted/.tekton/ .tekton/
-      
+          rsync -av --delete ../extracted/.tekton/ .tekton/
+          
+          echo "Checking git status and diff:"
+          git status
+          git diff || true
+          
           if git diff --quiet; then
             echo "No changes to commit."
             echo "commit=false" >> $GITHUB_ENV
             exit 0
           fi
-      
+          
           git add .tekton
           git commit -m "Update Tekton output-image tags to version ${{ inputs.version }}"
           git push --set-upstream origin "$branch_name"
           echo "commit=true" >> $GITHUB_ENV
+
 
 
 
