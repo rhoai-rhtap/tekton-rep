@@ -63,7 +63,6 @@ jobs:
           done
           
       - name: Clone repository
-        id: clone
         run: |
           git clone https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ inputs.repository }} repo-workspace
           cd repo-workspace
@@ -81,7 +80,14 @@ jobs:
           fi
       
           mkdir -p .tekton
-          rsync -av --delete ../extracted/.tekton/ .tekton/
+          # ✅ Use checksum to ensure rsync detects actual changes
+          rsync -avc --delete ../extracted/.tekton/ .tekton/
+      
+          # ✅ Debug to confirm any changes are detected
+          echo "=== Git status before commit ==="
+          git status
+          echo "=== Git diff ==="
+          git diff
       
           if git diff --quiet; then
             echo "No changes to commit."
@@ -93,6 +99,7 @@ jobs:
           git commit -m "Update Tekton output-image tags to version ${{ inputs.version }}"
           git push --set-upstream origin "$branch_name"
           echo "commit=true" >> $GITHUB_OUTPUT
+
 
 
       - name: Create Pull Request
