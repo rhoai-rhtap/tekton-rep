@@ -2,8 +2,8 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "customManagers": [
     {
-      "fileMatch": [
-        "^infra/feast-operator/config/overlays/rhoai/params\\.env$"
+      "managerFilePatterns": [
+        "/^infra/feast-operator/config/overlays/rhoai/params\\.env$/"
       ],
       "customType": "regex",
       "datasourceTemplate": "docker",
