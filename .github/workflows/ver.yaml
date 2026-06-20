@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - name: Checkout Automation Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           path: automation_repo
           token: ${{ secrets.GITHUB_TOKEN }}
